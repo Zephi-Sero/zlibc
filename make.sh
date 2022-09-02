@@ -14,6 +14,7 @@ $DEBUG && {
 CCSARGS="$CCARGS -static"
 
 RESET="\e[0m"
+SUCCESS="\e[32m"
 ERROR="\e[31m"
 
 BINDIR=bin/
@@ -111,7 +112,7 @@ build_tests()
 gen_test()
 {
 	fileName="`echo "$1" | grep -Eo "\/[^\/]+$"`"
-	[ "$fileName" = "test_main" ] || echo "`"$1" 2>&1`" > "$TESTDIR/$fileName"
+	[ "$fileName" = "test_main" ] || IFS="" echo "`"$1" 2>&1`" > "$TESTDIR/$fileName"
 }
 
 gen_tests()
@@ -123,9 +124,26 @@ gen_tests()
 	wait
 }
 
+TESTS_ERRORED=false
 run_test()
 {
-	echo "$file"
+	test="`echo "$1" | grep -Eo "[^\/]+$"`"
+	[ "$test" = "test_main" ] && exit
+	assertFile="test_assertions/$test"
+	diff "$1" "$assertFile" >/dev/null
+	CODE=$?
+	if [ "$CODE" -eq "0" ]; then
+		echo -e "Testing $test...${SUCCESS}$test successful!${RESET}"
+	elif [ "$CODE" -eq "2" ]; then
+		echo -e "Testing $test...${ERROR}$test has no assertion file!${RESET}"
+		TESTS_ERRORED=true
+	elif [ "$CODE" -eq "1"  ]; then
+		echo -e "Testing $test...${ERROR}$test does not match assertion!${RESET}"
+		TESTS_ERRORED=true
+	else
+		echo -e "Testing $test...${ERROR}$test had an unknown error. Diff returned code ${CODE}${RESET}"
+		TESTS_ERRORED=true
+	fi
 }
 
 run_tests()
