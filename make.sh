@@ -123,6 +123,11 @@ gen_tests()
 	wait
 }
 
+run_test()
+{
+	echo "$file"
+}
+
 run_tests()
 {
 	echo -n "Testing test_main..."
@@ -142,4 +147,4 @@ build_tests
 
 gen_tests
 
-#run_tests
+run_tests
