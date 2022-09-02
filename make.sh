@@ -1,4 +1,19 @@
 #!/bin/sh
+
+RESET="\e[0m"
+HEADER="\e[34m"
+SUCCESS="\e[32m"
+ERROR="\e[31m"
+
+print()
+{
+	echo
+	echo -e "${HEADER}$@${RESET}"
+	echo
+}
+
+print "Setting up"
+
 CC="tcc"
 AR="tcc -ar"
 LD="ld.lld"
@@ -13,9 +28,6 @@ $DEBUG && {
 
 CCSARGS="$CCARGS -static"
 
-RESET="\e[0m"
-ERROR="\e[31m"
-
 BINDIR=bin/
 OBJDIR=obj/
 TESTOBJDIR=obj/tests/
@@ -29,13 +41,6 @@ in_directory()
 	for file in "$1"/*; do
 		[ -d "$file" ] && in_directory "$file" || echo "$file" | sed -E "s|\/\/|\/|g"
 	done
-}
-
-print()
-{
-	echo
-	echo "=====[$@]====="
-	echo
 }
 
 CMD="mkdir -p $DIRS"
@@ -111,7 +116,7 @@ build_tests()
 gen_test()
 {
 	fileName="`echo "$1" | grep -Eo "\/[^\/]+$"`"
-	[ "$fileName" = "test_main" ] || echo "`"$1" 2>&1`" > "$TESTDIR/$fileName"
+	[ "$fileName" = "test_main" ] || IFS="" "$1" 2>&1 > "$TESTDIR/$fileName"
 }
 
 gen_tests()
@@ -123,11 +128,33 @@ gen_tests()
 	wait
 }
 
+TESTS_ERRORED=false
+run_test()
+{
+	test="`echo "$1" | grep -Eo "[^\/]+$"`"
+	[ "$test" = "test_main" ] && exit
+	assertFile="test_assertions/$test"
+	diff "$1" "$assertFile" >/dev/null
+	CODE=$?
+	if [ "$CODE" -eq "0" ]; then
+		echo -e "Testing $test...${SUCCESS}$test successful!${RESET}"
+	elif [ "$CODE" -eq "2" ]; then
+		echo -e "Testing $test...${ERROR}$test has no assertion file!${RESET}"
+		TESTS_ERRORED=true
+	elif [ "$CODE" -eq "1"  ]; then
+		echo -e "Testing $test...${ERROR}$test does not match assertion!${RESET}"
+		TESTS_ERRORED=true
+	else
+		echo -e "Testing $test...${ERROR}$test had an unknown error. Diff returned code ${CODE}${RESET}"
+		TESTS_ERRORED=true
+	fi
+}
+
 run_tests()
 {
 	echo -n "Testing test_main..."
 	./bin/test_main
-	[ $? -eq "84" ] && echo || echo "${ERROR}test_main did not return 84.${RESET}"
+	[ $? -eq "84" ] && echo -e "${SUCCESS}test_main successful!${RESET}" || echo -e "${ERROR}test_main does not match assertion!${RESET}"
 	for file in "$TESTDIR/"*; do
 		run_test "$file" &
 	done
@@ -142,4 +169,4 @@ build_tests
 
 gen_tests
 
-#run_tests
+run_tests

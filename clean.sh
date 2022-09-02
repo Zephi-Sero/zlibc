@@ -1,1 +1,1 @@
-rm -rf bin/ obj/ lib/
+rm -rf bin/ obj/ lib/ /tmp/zlibc_tests
