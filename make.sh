@@ -53,9 +53,9 @@ build_lib()
 	filename="`echo "$1" | grep -Eo "[^\/]+$" | sed -E "s|\.[^.]$||g"`.o"
 	ext="`echo "$1" | grep -Eo "\.[^\.]+$"`"
 	mkdir -p "$path"
-	CMD="$CC $CCSARGS -c "$1" -o "$path/$filename" -Iinclude/"
-	echo $CMD
-	$CMD
+	CMD="$CC $CCSARGS -c "$1" -o "$path/$filename""
+	echo $CMD \&
+	$CMD &
 }
 
 build_libs()
@@ -66,6 +66,7 @@ build_libs()
 		build_lib "$file" &
 	done
 	wait
+	echo wait
 	
 	notStart=`find obj/libc/*.o | grep -v _start`
 	
@@ -83,6 +84,7 @@ build_libs()
 	$CMD &
 	
 	wait
+	echo wait
 	
 	$DEBUG || strip --strip-unneeded lib/*
 }
@@ -92,13 +94,13 @@ build_test()
 	path="obj/`echo "$1" | sed -E "s|\/[^\/]+$||g"`"
 	filename="`echo "$1" | grep -Eo "[^\/]+$" | sed -E "s|\.[^.]$||g"`.o"
 	objfile="$path/$filename"
-	CMD="$CC $CCSARGS -c "$1" -o "$objfile" -Iinclude/"
+	CMD="$CC $CCSARGS -c "$1" -o "$objfile""
 	echo $CMD
 	$CMD
 	outFile="bin/`echo "$1" | sed -E "s|tests\/||g" | sed -E "s|\.[^\.]+$||g"`"
 	CMD="$LD $LDARGS "$objfile"  "lib/_start.o" "lib/zlibc.a" -o "$outFile""
-	echo $CMD
-	$CMD
+	echo $CMD \&
+	$CMD &
 }
 
 build_tests()
@@ -109,6 +111,7 @@ build_tests()
 		build_test "$file" &
 	done
 	wait
+	echo wait
 	
 	$DEBUG || strip --strip-all bin/*
 }
@@ -116,7 +119,10 @@ build_tests()
 gen_test()
 {
 	fileName="`echo "$1" | grep -Eo "\/[^\/]+$"`"
-	[ "$fileName" = "test_main" ] || IFS="" "$1" 2>/dev/null 1> "$TESTDIR/$fileName"
+	if [ ! "$fileName" = "test_main" ]; then
+		echo "IFS=\"\\n\" \"$1\" 2>/dev/null 1>\"$TESTDIR/$fileName\" &"
+		IFS="\n" "$1" 2>/dev/null 1>"$TESTDIR/$fileName" &
+	fi
 }
 
 gen_tests()
@@ -126,6 +132,7 @@ gen_tests()
 		gen_test "$exec" &
 	done
 	wait
+	echo wait
 }
 
 TESTS_ERRORED=false
@@ -137,28 +144,30 @@ run_test()
 	diff "$1" "$assertFile" 2>/dev/null 1>/dev/null
 	CODE=$?
 	if [ "$CODE" -eq "0" ]; then
-		echo -e "Testing $test...${SUCCESS}$test successful!${RESET}"
+		echo -e "Testing $test...${SUCCESS}Success!${RESET}"
 	elif [ "$CODE" -eq "2" ]; then
-		echo -e "Testing $test...${ERROR}$test has no assertion file!${RESET}"
+		echo -e "Testing $test...${ERROR}Missing assertion file!${RESET}"
 		TESTS_ERRORED=true
 	elif [ "$CODE" -eq "1"  ]; then
-		echo -e "Testing $test...${ERROR}$test does not match assertion!${RESET}"
+		echo -e "Testing $test...${ERROR}Assertion did not match!${RESET}"
 		TESTS_ERRORED=true
 	else
-		echo -e "Testing $test...${ERROR}$test had an unknown error. Diff returned code ${CODE}${RESET}"
+		echo -e "Testing $test...${ERROR}Failed due to an unknown error. Diff returned code ${CODE}${RESET}"
 		TESTS_ERRORED=true
 	fi
 }
 
 run_tests()
 {
+	print "Running tests"
 	echo -n "Testing test_main..."
 	./bin/test_main
-	[ $? -eq "84" ] && echo -e "${SUCCESS}test_main successful!${RESET}" || echo -e "${ERROR}test_main does not match assertion!${RESET}"
+	[ $? -eq "84" ] && echo -e "${SUCCESS}Success!${RESET}" || echo -e "${ERROR}Assertion did not match!${RESET}"
 	for file in "$TESTDIR/"*; do
 		run_test "$file" &
 	done
 	wait
+	echo wait
 }
 
 
