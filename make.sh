@@ -20,7 +20,7 @@ LD="ld.lld"
 LDARGS="-Llib -nostdlib -O2"
 CCARGS="-Llib -Iinclude -ffreestanding -nostdlib -Os -Wall -Wextra -Wpedantic"
 
-DEBUG=true
+DEBUG=false
 $DEBUG && {
 	CCARGS="$CCARGS -g"
 	LDARGS="$LDARGS -g"
