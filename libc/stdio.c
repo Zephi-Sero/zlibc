@@ -33,3 +33,15 @@ ssize_t puts(char const *const str)
 {
 	return fputs(str, 1);
 }
+
+
+
+ssize_t fprintf(size_t const fd, char const *const format, ...)
+{
+
+}
+
+ssize_t printf(char const *const format, ...)
+{
+
+}

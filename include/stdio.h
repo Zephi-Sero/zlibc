@@ -3,6 +3,11 @@
 
 
 
+// Emits a formatted null-terminated string onto a file descriptor, excluding
+// newline and null terminator.
+ssize_t fprintf(size_t const fd, char const *const format, ...);
+
+
 // Emits a single character onto a file stream descriptor
 ssize_t fputc(char const ch, size_t const fd);
 
