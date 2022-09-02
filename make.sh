@@ -116,7 +116,7 @@ build_tests()
 gen_test()
 {
 	fileName="`echo "$1" | grep -Eo "\/[^\/]+$"`"
-	[ "$fileName" = "test_main" ] || IFS="" "$1" 1> "$TESTDIR/$fileName"
+	[ "$fileName" = "test_main" ] || IFS="" "$1" 2>/dev/null 1> "$TESTDIR/$fileName"
 }
 
 gen_tests()
