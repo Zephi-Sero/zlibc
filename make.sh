@@ -1,4 +1,19 @@
 #!/bin/sh
+
+RESET="\e[0m"
+HEADER="\e[34m"
+SUCCESS="\e[32m"
+ERROR="\e[31m"
+
+print()
+{
+	echo
+	echo -e "${HEADER}$@${RESET}"
+	echo
+}
+
+print "Setting up"
+
 CC="tcc"
 AR="tcc -ar"
 LD="ld.lld"
@@ -13,10 +28,6 @@ $DEBUG && {
 
 CCSARGS="$CCARGS -static"
 
-RESET="\e[0m"
-SUCCESS="\e[32m"
-ERROR="\e[31m"
-
 BINDIR=bin/
 OBJDIR=obj/
 TESTOBJDIR=obj/tests/
@@ -30,13 +41,6 @@ in_directory()
 	for file in "$1"/*; do
 		[ -d "$file" ] && in_directory "$file" || echo "$file" | sed -E "s|\/\/|\/|g"
 	done
-}
-
-print()
-{
-	echo
-	echo "=====[$@]====="
-	echo
 }
 
 CMD="mkdir -p $DIRS"
@@ -150,7 +154,7 @@ run_tests()
 {
 	echo -n "Testing test_main..."
 	./bin/test_main
-	[ $? -eq "84" ] && echo || echo "${ERROR}test_main did not return 84.${RESET}"
+	[ $? -eq "84" ] && echo -e "${SUCCESS}test_main successful!${RESET}" || echo -e "${ERROR}test_main does not match assertion!${RESET}"
 	for file in "$TESTDIR/"*; do
 		run_test "$file" &
 	done
