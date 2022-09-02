@@ -54,8 +54,8 @@ build_lib()
 	ext="`echo "$1" | grep -Eo "\.[^\.]+$"`"
 	mkdir -p "$path"
 	CMD="$CC $CCSARGS -c "$1" -o "$path/$filename""
-	echo $CMD \&
-	$CMD &
+	echo $CMD
+	$CMD
 }
 
 build_libs()
@@ -99,8 +99,8 @@ build_test()
 	$CMD
 	outFile="bin/`echo "$1" | sed -E "s|tests\/||g" | sed -E "s|\.[^\.]+$||g"`"
 	CMD="$LD $LDARGS "$objfile"  "lib/_start.o" "lib/zlibc.a" -o "$outFile""
-	echo $CMD \&
-	$CMD &
+	echo $CMD
+	$CMD
 }
 
 build_tests()
@@ -120,8 +120,8 @@ gen_test()
 {
 	fileName="`echo "$1" | grep -Eo "\/[^\/]+$"`"
 	if [ ! "$fileName" = "test_main" ]; then
-		echo "IFS=\"\\n\" \"$1\" 2>/dev/null 1>\"$TESTDIR/$fileName\" &"
-		IFS="\n" "$1" 2>/dev/null 1>"$TESTDIR/$fileName" &
+		echo "IFS=\"\\n\" \"$1\" 2>/dev/null 1>\"$TESTDIR/$fileName\""
+		IFS="\n" "$1" 2>/dev/null 1>"$TESTDIR/$fileName"
 	fi
 }
 
@@ -169,8 +169,6 @@ run_tests()
 	wait
 	echo wait
 }
-
-
 
 build_libs
 
