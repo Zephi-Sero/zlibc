@@ -134,7 +134,7 @@ run_test()
 	test="`echo "$1" | grep -Eo "[^\/]+$"`"
 	[ "$test" = "test_main" ] && exit
 	assertFile="test_assertions/$test"
-	diff "$1" "$assertFile" >/dev/null
+	diff "$1" "$assertFile" 2>/dev/null 1>/dev/null
 	CODE=$?
 	if [ "$CODE" -eq "0" ]; then
 		echo -e "Testing $test...${SUCCESS}$test successful!${RESET}"
