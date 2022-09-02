@@ -116,7 +116,7 @@ build_tests()
 gen_test()
 {
 	fileName="`echo "$1" | grep -Eo "\/[^\/]+$"`"
-	[ "$fileName" = "test_main" ] || IFS="" "$1" 2>&1 > "$TESTDIR/$fileName"
+	[ "$fileName" = "test_main" ] || IFS="" "$1" 1> "$TESTDIR/$fileName"
 }
 
 gen_tests()
@@ -171,4 +171,9 @@ gen_tests
 
 run_tests
 
-$TESTS_ERRORED && print "All tests succeeded" || (print "${ERROR}Some tests have failed, cannot continue :("; exit 1)
+if $TESTS_ERRORED; then
+	print "${ERROR}Some tests have failed, cannot continue :("
+	exit 1
+fi
+
+print "All tests succeeded!"
