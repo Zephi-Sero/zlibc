@@ -170,3 +170,5 @@ build_tests
 gen_tests
 
 run_tests
+
+$TESTS_ERRORED && print "All tests succeeded" || (print "${ERROR}Some tests have failed, cannot continue :("; exit 1)
